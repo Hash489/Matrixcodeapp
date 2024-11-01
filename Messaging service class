@@ -1,0 +1,36 @@
+class MessagingService {
+  final List<ConnectedDevice> connectedDevices = [];
+
+  void broadcastMessage(String message) {
+    for (var device in connectedDevices) {
+      sendMessageToDevice(device, message);
+    }
+  }
+
+  void sendMessageToDevice(ConnectedDevice device, String message) async {
+    try {
+      if (device.method == ConnectionMethod.wifiDirect) {
+        // Send message via Wi-Fi Direct
+      } else if (device.method == ConnectionMethod.bluetooth) {
+        // Send message via Bluetooth
+      }
+    } catch (e) {
+      print('Error sending message to ${device.deviceName}: $e');
+    }
+  }
+
+  void addConnectedDevice(dynamic device, ConnectionMethod method) {
+    connectedDevices.add(ConnectedDevice(device, method));
+  }
+}
+
+class ConnectedDevice {
+  final dynamic device;
+  final ConnectionMethod method;
+
+  ConnectedDevice(this.device, this.method);
+
+  String get deviceName => device.deviceName;
+}
+
+enum ConnectionMethod { wifiDirect, bluetooth }
