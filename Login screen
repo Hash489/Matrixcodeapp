@@ -1,0 +1,27 @@
+class LoginScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Login')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            _requestPermissions().then((_) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => DeviceDiscoveryScreen()),
+              );
+            });
+          },
+          child: Text('Anonymous Login'),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _requestPermissions() async {
+    await Permission.locationWhenInUse.request();
+    await Permission.bluetooth.request();
+    await Permission.accessWifiState.request();
+  }
+}
