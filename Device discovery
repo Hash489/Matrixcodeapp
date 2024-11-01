@@ -1,0 +1,78 @@
+class DeviceDiscoveryScreen extends StatefulWidget {
+  @override
+  _DeviceDiscoveryScreenState createState() => _DeviceDiscoveryScreenState();
+}
+
+class _DeviceDiscoveryScreenState extends State<DeviceDiscoveryScreen> {
+  List<WiFiDirectDevice> discoveredWiFiDevices = [];
+  List<BluetoothDevice> discoveredBluetoothDevices = [];
+  MessagingService messagingService = MessagingService();
+
+  @override
+  void initState() {
+    super.initState();
+    discoverDevices();
+  }
+
+  void discoverDevices() {
+    discoverWiFiDevices();
+    discoverBluetoothDevices();
+  }
+
+  void discoverWiFiDevices() async {
+    List<WiFiDirectDevice> devices = await WiFiDirect.discoverDevices();
+    setState(() {
+      discoveredWiFiDevices = devices;
+    });
+    for (var device in devices) {
+      await connectToDevice(device, ConnectionMethod.wifiDirect);
+    }
+  }
+
+  void discoverBluetoothDevices() async {
+    List<BluetoothDevice> devices = await Bluetooth.discoverDevices();
+    setState(() {
+      discoveredBluetoothDevices = devices;
+    });
+    for (var device in devices) {
+      await connectToDevice(device, ConnectionMethod.bluetooth);
+    }
+  }
+
+  Future<void> connectToDevice(dynamic device, ConnectionMethod method) async {
+    try {
+      if (method == ConnectionMethod.wifiDirect) {
+        await WiFiDirect.connect(device);
+        messagingService.addConnectedDevice(device, method);
+        print('Connected to ${device.deviceName} via Wi-Fi Direct');
+      } else if (method == ConnectionMethod.bluetooth) {
+        await Bluetooth.connect(device);
+        messagingService.addConnectedDevice(device, method);
+        print('Connected to ${device.deviceName} via Bluetooth');
+      }
+    } catch (e) {
+      print('Connection failed to ${device.deviceName}: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Discover Devices')),
+      body: ListView.builder(
+        itemCount: discoveredWiFiDevices.length + discoveredBluetoothDevices.length,
+        itemBuilder: (context, index) {
+          if (index < discoveredWiFiDevices.length) {
+            return ListTile(
+              title: Text(discoveredWiFiDevices[index].deviceName),
+            );
+          } else {
+            return ListTile(
+              title: Text(discoveredBluetoothDevices[index - discoveredWiFiDevices.length].deviceName),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
